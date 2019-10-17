@@ -6,4 +6,5 @@ class TaskContract {
   static String colTitle = "task_title";
   static String colDesc = "task_desc";
   static String colDate = "task_date";
+  static String colIsComplete = "task_complete";
 }

@@ -30,11 +30,13 @@ class TaskDBHelper {
           TaskContract.tableName +
           "(" +
           TaskContract.colID +
-          " INTEGER PRIMARY KEY AUTOINCREMENT," +
+          " INTEGER  PRIMARY KEY AUTOINCREMENT," +
           TaskContract.colTitle +
           " TEXT NOT NULL," +
           TaskContract.colDesc +
           " TEXT," +
+          TaskContract.colIsComplete +
+          " INT DEFAULT 0," +
           TaskContract.colDate +
           " DATE DEFAULT CURRENT_TIMESTAMP " +
           ")";

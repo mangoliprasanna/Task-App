@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:tasks/data/task_provider.dart';
 import 'package:tasks/models/task.dart';
 import 'package:tasks/new_task.dart';
@@ -81,6 +82,12 @@ class _MyHomePageState extends State<MyHomePage> {
         elevation: 0.0,
         centerTitle: true,
         title: Text(widget.title),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.offline_pin),
+            onPressed: () {},
+          )
+        ],
       ),
       body: Container(
         color: Colors.blue,
@@ -93,7 +100,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 topRight: Radius.circular(40.0)),
           ),
           child: FutureBuilder(
-            future: _dbProvider.getTasks(),
+            future: _dbProvider.getPendingTasks(),
             builder: ((context, snapshot) {
               if (snapshot.hasData) {
                 List<Task> allTask = snapshot.data;
@@ -104,9 +111,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         return Dismissible(
                           key: ValueKey(allTask[position].taskID),
                           child: ListTile(
-                            onTap: () {
-                              print("");
-                            },
+                            onTap: () {},
                             title: Text(
                               allTask[position].taskTitle,
                               style: TextStyle(
@@ -139,8 +144,8 @@ class _MyHomePageState extends State<MyHomePage> {
                             ),
                           ),
                           onDismissed: (direction) {
+                            Task currentTask = allTask[position];
                             if (direction.index == 2) {
-                              Task currentTask = allTask[position];
                               _dbProvider.deleteTask(allTask[position]);
                               Scaffold.of(context).showSnackBar(SnackBar(
                                 content: Text("Task Deleted."),
@@ -153,14 +158,38 @@ class _MyHomePageState extends State<MyHomePage> {
                                 ),
                               ));
                             } else {
-                              print("Complete");
+                              currentTask.complete();
+                              _dbProvider.updateTask(currentTask);
+                              setState(() {});
                             }
                             allTask.removeAt(position);
+                            setState(() {});
                           },
                         );
                       });
                 } else {
-                  return Text("No task found :(");
+                  return Padding(
+                    padding: EdgeInsets.only(top: 50.0),
+                    child: Column(
+                      children: <Widget>[
+                        Center(
+                          child: Image.asset("assets/fresh_start.png"),
+                        ),
+                        Center(
+                          child: Text(
+                            "A Fresh start.",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        Center(
+                          child: Text(
+                            "Anything to add?",
+                            textAlign: TextAlign.center,
+                          ),
+                        )
+                      ],
+                    ),
+                  );
                 }
               } else {
                 return Text("Error");

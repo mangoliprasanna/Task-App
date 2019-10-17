@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:tasks/data/task_provider.dart';
 import 'package:tasks/models/task.dart';
 
@@ -10,8 +11,33 @@ class NewTask extends StatefulWidget {
 
 class _NewTaskState extends State<NewTask> {
   var descVisibility = false;
+  DateTime _taskDate;
   TextEditingController _taskTitleController = TextEditingController();
   TextEditingController _taskDescController = TextEditingController();
+
+  void changeDateTime() async {
+    var selectedDate = await showDatePicker(
+        context: context,
+        firstDate: DateTime.now().subtract(Duration(hours: 10)),
+        initialDate: (_taskDate != null)
+            ? DateTime(_taskDate.year, _taskDate.month, _taskDate.day)
+            : DateTime.now(),
+        lastDate: DateTime.now().add(Duration(days: 30)));
+    if (selectedDate != null) {
+      var selectedTime = await showTimePicker(
+          context: context,
+          initialTime: (_taskDate != null)
+              ? TimeOfDay(hour: _taskDate.hour, minute: _taskDate.minute)
+              : TimeOfDay.now());
+      if (selectedTime != null) {
+        setState(() {
+          _taskDate = new DateTime(selectedDate.year, selectedDate.month,
+              selectedDate.day, selectedTime.hour, selectedTime.minute);
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -22,6 +48,8 @@ class _NewTaskState extends State<NewTask> {
           padding:
               EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               TextField(
                 keyboardType: TextInputType.multiline,
@@ -44,8 +72,36 @@ class _NewTaskState extends State<NewTask> {
                     )
                   : Container(),
               Container(
-                height: 50.0,
-              ),
+                  padding: EdgeInsets.only(top: 20.0, bottom: 20.0),
+                  child: (_taskDate != null)
+                      ? Row(
+                          children: <Widget>[
+                            Padding(
+                              padding: EdgeInsets.all(5.0),
+                              child: Icon(Icons.calendar_today),
+                            ),
+                            InkWell(
+                              child: Padding(
+                                padding: EdgeInsets.all(5.0),
+                                child: Text(new DateFormat("d MMMM, h:mm a")
+                                    .format(_taskDate)),
+                              ),
+                              onTap: changeDateTime,
+                            ),
+                            Padding(
+                              padding: EdgeInsets.all(5.0),
+                              child: InkWell(
+                                child: Icon(Icons.close),
+                                onTap: () {
+                                  setState(() {
+                                    _taskDate = null;
+                                  });
+                                },
+                              ),
+                            )
+                          ],
+                        )
+                      : Container()),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
@@ -66,27 +122,23 @@ class _NewTaskState extends State<NewTask> {
                     child: InkWell(
                       child: Icon(Icons.calendar_today,
                           size: 30.0, color: Colors.blue),
-                      onTap: () async {
-                        var selectedDate = await showDatePicker(
-                            context: context,
-                            firstDate: DateTime.now(),
-                            initialDate: DateTime.now(),
-                            lastDate: DateTime.now().add(Duration(days: 30)));
-                        print((selectedDate.toString() ?? "hello"));
-                      },
+                      onTap: changeDateTime,
                     ),
                   ),
                   RaisedButton(
                     onPressed: () {
+                      Task newTask;
                       if (descVisibility &&
                           _taskDescController.text.length > 0) {
-                        widget._taskProvider.insertTask(Task(
-                            _taskTitleController.text,
-                            _taskDescController.text));
+                          newTask = Task(_taskTitleController.text, _taskDescController.text, _taskDate.toString());
                       } else if (_taskTitleController.text.length > 0) {
-                        widget._taskProvider
-                            .insertTask(Task(_taskTitleController.text));
+                        newTask = Task(_taskTitleController.text);
                       }
+
+                      if(_taskDate != null){
+                        newTask.setDate(_taskDate.toString());
+                      }
+                      widget._taskProvider.insertTask(newTask);
                       Navigator.pop(context);
                     },
                     color: Colors.transparent,
