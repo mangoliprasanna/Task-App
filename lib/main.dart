@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:tasks/data/task_provider.dart';
 import 'package:tasks/models/task.dart';
 import 'package:tasks/new_task.dart';
@@ -82,12 +81,6 @@ class _MyHomePageState extends State<MyHomePage> {
         elevation: 0.0,
         centerTitle: true,
         title: Text(widget.title),
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.offline_pin),
-            onPressed: () {},
-          )
-        ],
       ),
       body: Container(
         color: Colors.blue,
@@ -96,8 +89,9 @@ class _MyHomePageState extends State<MyHomePage> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(40.0),
-                topRight: Radius.circular(40.0)),
+              topLeft: Radius.circular(40.0),
+              topRight: Radius.circular(40.0),
+            ),
           ),
           child: FutureBuilder(
             future: _dbProvider.getPendingTasks(),
@@ -147,16 +141,18 @@ class _MyHomePageState extends State<MyHomePage> {
                             Task currentTask = allTask[position];
                             if (direction.index == 2) {
                               _dbProvider.deleteTask(allTask[position]);
-                              Scaffold.of(context).showSnackBar(SnackBar(
-                                content: Text("Task Deleted."),
-                                action: SnackBarAction(
-                                  label: 'Undo',
-                                  onPressed: () {
-                                    _dbProvider.insertTask(currentTask);
-                                    setState(() {});
-                                  },
+                              Scaffold.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text("Task Deleted."),
+                                  action: SnackBarAction(
+                                    label: 'Undo',
+                                    onPressed: () {
+                                      _dbProvider.insertTask(currentTask);
+                                      setState(() {});
+                                    },
+                                  ),
                                 ),
-                              ));
+                              );
                             } else {
                               currentTask.complete();
                               _dbProvider.updateTask(currentTask);
